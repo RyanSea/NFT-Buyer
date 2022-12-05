@@ -1,0 +1,7 @@
+ds-test/=lib/forge-std/lib/ds-test/src/
+forge-std/=lib/forge-std/src/
+openzeppelin/=lib/openzeppelin-contracts/contracts/
+seaport/=lib/seaport/contracts/
+solmate/=lib/solmate/src/
+sudoswap/=lib/lssvm/src/
+zora/=lib/v3/contracts/
