@@ -45,7 +45,7 @@ contract SudoswapModule {
      *
      * @param order                         encoded order args w/ selector
     */
-    function fulfillOrder(bytes calldata order) external virtual {
+    function fulfillOrder(bytes calldata order) external virtual payable {
         bytes4 selector = bytes4(order[:4]);
 
         if (selector == ILSSVMRouter.swapETHForAnyNFTs.selector) {
