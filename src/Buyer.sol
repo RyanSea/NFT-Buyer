@@ -77,8 +77,7 @@ contract Buyer is ReentrancyGuard {
 
         bytes memory payload = abi.encodeWithSelector(SudoswapModule.fulfillOrder.selector, order_data.order);
 
-        // todo: integrate functionDelegateCall.. 
-        order_data.module.delegatecall(payload);
+        order_data.module.functionDelegateCall(payload);
     }
 
     /*///////////////////////////////////////////////////////////////
