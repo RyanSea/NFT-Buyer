@@ -88,7 +88,7 @@ contract SudoswapModule {
         // transfer from user to Buyer contract
         token.safeTransferFrom(msg.sender, address(this), inputAmount);
 
-        // approve pools
+        // approve sudoswap
         token.safeApprove(sudoswap, inputAmount);
 
         // submit order
@@ -124,7 +124,7 @@ contract SudoswapModule {
         // transfer from user to Buyer contract
         token.safeTransferFrom(msg.sender, address(this), inputAmount);
 
-        // approve pools
+        // approve sudoswap
         token.safeApprove(sudoswap, inputAmount);
 
         // submit order
@@ -138,62 +138,5 @@ contract SudoswapModule {
         // note: there is no refund address arg for ERC20 trades
         token.safeTransfer(msg.sender, unspent);
     }
-
-    /*///////////////////////////////////////////////////////////////
-                              PAIR APPROVALS
-    //////////////////////////////////////////////////////////////*/ 
-    
-
-    // /**
-    //  * @notice approves each pool in a PairSwapAny[] by getting a quote for each order
-    //  *
-    //  * @dev not very optimal gas-wise, exploring a solution for this in the upgrade
-    //  *
-    //  * @param swapList                      PairSwapAny[] containing order
-    // */
-    // function _approvePairSwapAny(ERC20 token, PairSwapAny[] memory swapList) internal {
-    //     uint length = swapList.length;
-
-    //     ILSSVMPair pair;
-    //     uint256 price;
-    //     uint256 fee;
-
-    //     // iterate through swapList, get pool price for NFTs, and approve pool
-    //     for (uint i; i < length; ) {
-    //         pair = swapList[i].pair;
-
-    //         ( , , , price, fee) = pair.getBuyNFTQuote(swapList[i].numItems);
-
-    //         token.safeApprove(address(pair), price + fee);
-
-    //         unchecked { ++i; }
-    //     }
-    // }
-
-    // /**
-    //  * @notice approves each pool in a PairSwapSpecific[] by getting a quote for each order
-    //  *
-    //  * @dev not very optimal gas-wise, exploring a solution for this in the upgrade
-    //  *
-    //  * @param swapList                      PairSwapSpecific[] containing order
-    // */
-    // function _approvePairSwapSpecific( ERC20 token, PairSwapSpecific[] memory swapList) internal {
-    //     uint length = swapList.length;
-
-    //     ILSSVMPair pair;
-    //     uint256 price;
-    //     uint256 fee;
-
-    //     // iterate through swapList, get pool price for NFTs, and approve pool
-    //     for (uint i; i < length; ) {
-    //         pair = swapList[i].pair;
-
-    //         ( , , , price, fee) = pair.getBuyNFTQuote(swapList[i].nftIds.length);
-
-    //         token.safeApprove(address(pair), price + fee);
-
-    //         unchecked { ++i; }
-    //     }
-    // }
 
 }
