@@ -11,6 +11,8 @@ import {
     RobustPairSwapSpecific
 } from "../interfaces/ILSSVMRouter.sol";
 
+import "forge-std/Test.sol";
+
 import { SafeTransferLib } from "solmate/utils/SafeTransferLib.sol";
 
 contract SudoswapModule {
@@ -34,32 +36,7 @@ contract SudoswapModule {
     /// @notice invalid sudoswap order
     error Sudoswap_InvalidOrder();
 
-    /*///////////////////////////////////////////////////////////////
-                              ORDER ROUTER
-    //////////////////////////////////////////////////////////////*/ 
-
-    /**
-     * @notice routes order
-     *
-     * @dev will revert if selector isn't a supported sudoswap function
-     *
-     * @param order                         encoded order args w/ selector
-    */
-    function fulfillOrder(bytes calldata order) external virtual payable {
-        bytes4 selector = bytes4(order[:4]);
-
-        if (selector == ILSSVMRouter.swapETHForAnyNFTs.selector) {
-            _swapETHForAnyNFTs(order);
-        } else if (selector == ILSSVMRouter.swapETHForSpecificNFTs.selector) {
-            _swapETHForSpecificNFTs(order);
-        } else if (selector == ILSSVMRouter.swapERC20ForAnyNFTs.selector) {
-            _swapERC20ForAnyNFTs(order);
-        } else if (selector == ILSSVMRouter.swapERC20ForSpecificNFTs.selector) {
-            _swapERC20ForSpecificNFTs(order);
-        } else {
-            revert Sudoswap_InvalidOrder();
-        }
-    }
+    error Sudoswap_PurchaseFailed();
 
     /*///////////////////////////////////////////////////////////////
                             ORDER FULFILLMENT
@@ -73,23 +50,10 @@ contract SudoswapModule {
      *
      * @param order                         encoded order args w/ selector
     */
-    function _swapETHForAnyNFTs(bytes calldata order) internal {
-        (
-            PairSwapAny[] memory swapList,  // NFT order
-            address payable recipient,      // recipient of unspent funds
-            address nftRecipient,           // recipient of NFTs
-            uint256 deadline                // epoch deadline for order
-        ) = abi.decode(order[4:], (PairSwapAny[],address,address,uint256));
+    function swapETHForAnyNFTs(bytes calldata order) external payable {
+        (bool success , ) = address(sudoswap).call{ value: msg.value }(order);
 
-        uint256 unspent = sudoswap.swapETHForAnyNFTs{ value : msg.value }(
-            swapList, 
-            recipient, 
-            nftRecipient, 
-            deadline
-        );
-
-        // refund sender any unspent tokens
-        if (unspent > 0) msg.sender.call{ value: unspent }("");
+        if (!success) revert Sudoswap_PurchaseFailed();
     }
 
     /**
@@ -100,23 +64,10 @@ contract SudoswapModule {
      *
      * @param order                         encoded order args w/ selector
     */
-    function _swapETHForSpecificNFTs(bytes calldata order) internal {
-        (
-            PairSwapSpecific[] memory swapList,  // NFT order
-            address payable recipient,           // recipient of unspent funds
-            address nftRecipient,                // recipient of NFTs
-            uint256 deadline                     // epoch deadline for order
-        ) = abi.decode(order[4:], (PairSwapSpecific[],address,address,uint256));
+    function swapETHForSpecificNFTs(bytes calldata order) external payable {
+        (bool success , ) = address(sudoswap).call{ value: msg.value }(order);
 
-        uint256 unspent = sudoswap.swapETHForSpecificNFTs{ value : msg.value }(
-            swapList, 
-            recipient, 
-            nftRecipient, 
-            deadline
-        );
-
-        // refund sender any unspent tokens
-        if (unspent > 0) msg.sender.call{ value: unspent }("");
+        if (!success) revert Sudoswap_PurchaseFailed();
     }
 
     /**
@@ -130,9 +81,7 @@ contract SudoswapModule {
     function _swapERC20ForAnyNFTs(bytes calldata order) internal {
         (
             PairSwapAny[] memory swapList,    // NFT order
-            uint256 inputAmount,              // total amount to spend
-            address nftRecipient,             // receiver of NFT's
-            uint256 deadline                  // deadline for trade
+            uint256 inputAmount, ,            // total amount to spend,            
         ) = abi.decode(order[4:], (PairSwapAny[],uint256,address,uint256));
 
         // note: the ERC20 is the same for all trades
@@ -145,12 +94,15 @@ contract SudoswapModule {
         _approvePairSwapAny(token, swapList);
 
         // submit order
-        sudoswap.swapERC20ForAnyNFTs(
-            swapList,
-            inputAmount,
-            nftRecipient,
-            deadline
-        );
+        (bool success , bytes memory _unspent) = address(sudoswap).call{ value: msg.value }(order);
+
+        if (!success) revert Sudoswap_PurchaseFailed();
+
+        uint unspent = abi.decode(_unspent, (uint256));
+
+        // refund buyer any unspent tokens
+        // note: there is no refund address arg for ERC20 trades
+        token.safeTransfer(msg.sender, unspent);
     }
 
     /**
@@ -164,9 +116,8 @@ contract SudoswapModule {
     function _swapERC20ForSpecificNFTs(bytes calldata order) internal {
         (
             PairSwapSpecific[] memory swapList,   // NFT order
-            uint256 inputAmount,                  // total amount to spend
-            address nftRecipient,                 // receiver of NFT's
-            uint256 deadline                      // deadline for trade
+            uint256 inputAmount, ,                // total amount to spend
+
         ) = abi.decode(order[4:], (PairSwapSpecific[],uint256,address,uint256));
 
         // note: the ERC20 is the same for all trades
@@ -179,12 +130,15 @@ contract SudoswapModule {
         _approvePairSwapSpecific(token, swapList);
 
         // submit order
-        sudoswap.swapERC20ForSpecificNFTs(
-            swapList,
-            inputAmount,
-            nftRecipient,
-            deadline
-        );
+        (bool success , bytes memory _unspent) = address(sudoswap).call{ value: msg.value }(order);
+
+        if (!success) revert Sudoswap_PurchaseFailed();
+
+        uint unspent = abi.decode(_unspent, (uint256));
+
+        // refund buyer any unspent tokens
+        // note: there is no refund address arg for ERC20 trades
+        token.safeTransfer(msg.sender, unspent);
     }
 
     /*///////////////////////////////////////////////////////////////

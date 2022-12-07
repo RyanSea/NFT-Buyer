@@ -35,32 +35,6 @@ contract SeaportModule {
     error Seaport_InvalidOrderType();
 
     /*///////////////////////////////////////////////////////////////
-                              ORDER ROUTER
-    //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @notice routes order
-     *
-     * @dev will revert if selector isn't a supported sudoswap function
-     *
-     * @param order                         encoded order args w/ selector
-    */
-    function fulfillOrder(bytes calldata order) external virtual payable {
-        bytes4 selector = bytes4(order[:4]);
-
-        if (selector == SeaportInterface.fulfillBasicOrder.selector) {
-            _fulfillBasicOrder(order);
-
-        } else if (selector == SeaportInterface.fulfillAdvancedOrder.selector) {
-            // temp:
-            revert Seaport_InvalidOrder(); //_fulfillAdvancedOrder(order);
-
-        } else {
-            revert Seaport_InvalidOrder();
-        }
-    }
-
-    /*///////////////////////////////////////////////////////////////
                             ORDER FULFILLMENT
     //////////////////////////////////////////////////////////////*/ 
 
@@ -69,7 +43,7 @@ contract SeaportModule {
      *
      * @param order                         encoded order args w/ selector
     */
-    function _fulfillBasicOrder(bytes calldata order) internal {
+    function fulfillBasicOrder(bytes calldata order) external payable {
         BasicOrderParameters memory params = abi.decode(order[4:], (BasicOrderParameters));
 
         // save 'BasicOrderType' enum as uint
@@ -109,7 +83,7 @@ contract SeaportModule {
 
 
     /// review: identify security considerations before implementing.. I'm very new to seaport contracts
-    // function _fulfillAdvancedOrder(bytes calldata order) internal {
+    // function _fulfillAdvancedOrder(bytes calldata order) external payable {
     //     AdvancedOrder memory params = abi.decode(order[4:], (AdvancedOrder));
 
     //     uint total_consideration;

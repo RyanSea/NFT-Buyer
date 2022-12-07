@@ -75,9 +75,9 @@ contract Buyer is ReentrancyGuard {
     function initiateOrder(OrderData calldata order_data) external payable nonReentrant {
         if (!valid[order_data.module]) revert InvalidModule();
 
-        bytes memory payload = abi.encodeWithSelector(IMarketModule.fulfillOrder.selector, order_data.order);
+        //bytes memory payload = abi.encodeWithSelector(IMarketModule.fulfillOrder.selector, order_data.order);
         
-        order_data.module.functionDelegateCall(payload);
+        order_data.module.functionDelegateCall(order_data.order);
     }
 
     /*///////////////////////////////////////////////////////////////

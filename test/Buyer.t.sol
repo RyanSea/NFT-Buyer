@@ -63,12 +63,17 @@ contract BuyerTest is Test {
 
         uint price = _sudoPairSpecificGetPrice(swaps);
 
-        bytes memory order = abi.encodeWithSelector(
-            ILSSVMRouter.swapETHForSpecificNFTs.selector, 
-            swaps,
+        bytes memory sudoswap_payload = abi.encodeCall(
+            ILSSVMRouter.swapETHForSpecificNFTs, 
+            (swaps,
             payable(user),
             user,
-            block.timestamp + 10000
+            block.timestamp + 10000)
+        );
+
+        bytes memory order = abi.encodeCall(
+            SudoswapModule.swapETHForSpecificNFTs, 
+            sudoswap_payload
         );
         
         Buyer.OrderData memory order_data = Buyer.OrderData(order, address(sudo_module));
