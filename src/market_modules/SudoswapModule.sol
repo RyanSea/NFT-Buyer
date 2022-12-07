@@ -21,10 +21,10 @@ contract SudoswapModule {
 
     using SafeTransferLib for ERC20;
 
-    ILSSVMRouter public immutable sudoswap;
+    address public immutable sudoswap;
 
     constructor(address _sudoswap) {
-        sudoswap = ILSSVMRouter(_sudoswap);
+        sudoswap = _sudoswap;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ contract SudoswapModule {
         token.safeTransferFrom(msg.sender, address(this), inputAmount);
 
         // approve pools
-        _approvePairSwapAny(token, swapList);
+        token.safeApprove(sudoswap, inputAmount);
 
         // submit order
         (bool success , bytes memory _unspent) = address(sudoswap).call{ value: msg.value }(order);
@@ -125,7 +125,7 @@ contract SudoswapModule {
         token.safeTransferFrom(msg.sender, address(this), inputAmount);
 
         // approve pools
-        _approvePairSwapSpecific(token, swapList);
+        token.safeApprove(sudoswap, inputAmount);
 
         // submit order
         (bool success , bytes memory _unspent) = address(sudoswap).call{ value: msg.value }(order);
@@ -142,57 +142,58 @@ contract SudoswapModule {
     /*///////////////////////////////////////////////////////////////
                               PAIR APPROVALS
     //////////////////////////////////////////////////////////////*/ 
+    
 
-    /**
-     * @notice approves each pool in a PairSwapAny[] by getting a quote for each order
-     *
-     * @dev not very optimal gas-wise, exploring a solution for this in the upgrade
-     *
-     * @param swapList                      PairSwapAny[] containing order
-    */
-    function _approvePairSwapAny(ERC20 token, PairSwapAny[] memory swapList) internal {
-        uint length = swapList.length;
+    // /**
+    //  * @notice approves each pool in a PairSwapAny[] by getting a quote for each order
+    //  *
+    //  * @dev not very optimal gas-wise, exploring a solution for this in the upgrade
+    //  *
+    //  * @param swapList                      PairSwapAny[] containing order
+    // */
+    // function _approvePairSwapAny(ERC20 token, PairSwapAny[] memory swapList) internal {
+    //     uint length = swapList.length;
 
-        ILSSVMPair pair;
-        uint256 price;
-        uint256 fee;
+    //     ILSSVMPair pair;
+    //     uint256 price;
+    //     uint256 fee;
 
-        // iterate through swapList, get pool price for NFTs, and approve pool
-        for (uint i; i < length; ) {
-            pair = swapList[i].pair;
+    //     // iterate through swapList, get pool price for NFTs, and approve pool
+    //     for (uint i; i < length; ) {
+    //         pair = swapList[i].pair;
 
-            ( , , , price, fee) = pair.getBuyNFTQuote(swapList[i].numItems);
+    //         ( , , , price, fee) = pair.getBuyNFTQuote(swapList[i].numItems);
 
-            token.safeApprove(address(pair), price + fee);
+    //         token.safeApprove(address(pair), price + fee);
 
-            unchecked { ++i; }
-        }
-    }
+    //         unchecked { ++i; }
+    //     }
+    // }
 
-    /**
-     * @notice approves each pool in a PairSwapSpecific[] by getting a quote for each order
-     *
-     * @dev not very optimal gas-wise, exploring a solution for this in the upgrade
-     *
-     * @param swapList                      PairSwapSpecific[] containing order
-    */
-    function _approvePairSwapSpecific( ERC20 token, PairSwapSpecific[] memory swapList) internal {
-        uint length = swapList.length;
+    // /**
+    //  * @notice approves each pool in a PairSwapSpecific[] by getting a quote for each order
+    //  *
+    //  * @dev not very optimal gas-wise, exploring a solution for this in the upgrade
+    //  *
+    //  * @param swapList                      PairSwapSpecific[] containing order
+    // */
+    // function _approvePairSwapSpecific( ERC20 token, PairSwapSpecific[] memory swapList) internal {
+    //     uint length = swapList.length;
 
-        ILSSVMPair pair;
-        uint256 price;
-        uint256 fee;
+    //     ILSSVMPair pair;
+    //     uint256 price;
+    //     uint256 fee;
 
-        // iterate through swapList, get pool price for NFTs, and approve pool
-        for (uint i; i < length; ) {
-            pair = swapList[i].pair;
+    //     // iterate through swapList, get pool price for NFTs, and approve pool
+    //     for (uint i; i < length; ) {
+    //         pair = swapList[i].pair;
 
-            ( , , , price, fee) = pair.getBuyNFTQuote(swapList[i].nftIds.length);
+    //         ( , , , price, fee) = pair.getBuyNFTQuote(swapList[i].nftIds.length);
 
-            token.safeApprove(address(pair), price + fee);
+    //         token.safeApprove(address(pair), price + fee);
 
-            unchecked { ++i; }
-        }
-    }
+    //         unchecked { ++i; }
+    //     }
+    // }
 
 }
