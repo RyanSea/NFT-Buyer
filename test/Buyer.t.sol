@@ -85,7 +85,7 @@ contract BuyerTest is Test {
 
         uint bal_after = user.balance;
 
-        // todo: go over pricing calcs
+        // todo: go over pricing calcs for sudoswap
 
         // no partial fills so this means the full order was successful
         assertEq(milady.ownerOf(9397), user);
