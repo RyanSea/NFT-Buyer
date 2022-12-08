@@ -6,10 +6,6 @@ import "openzeppelin/utils/Address.sol";
 
 import "solmate/utils/ReentrancyGuard.sol";
 
-import "./market_modules/SudoswapModule.sol";
-
-import "./interfaces/IMarketModule.sol";
-
 contract Buyer is ReentrancyGuard {
     
     /*///////////////////////////////////////////////////////////////
@@ -74,8 +70,6 @@ contract Buyer is ReentrancyGuard {
     */
     function initiateOrder(OrderData calldata order_data) external payable nonReentrant {
         if (!valid[order_data.module]) revert InvalidModule();
-
-        //bytes memory payload = abi.encodeWithSelector(IMarketModule.fulfillOrder.selector, order_data.order);
         
         order_data.module.functionDelegateCall(order_data.order);
     }
